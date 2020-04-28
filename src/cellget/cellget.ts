@@ -5,14 +5,14 @@ let isPowerOf2 = (value: number) => {
 /// /// ///
 
 // cellget
-interface Cell {
+export interface Cell {
    left: Cell
    right: Cell
    result: () => Cell
    get: (prop: GetProp) => Cell
 }
 
-interface GetProp {
+export interface GetProp {
    divisor: number
    widthNum: number
    xNum: number
@@ -20,79 +20,79 @@ interface GetProp {
 }
 
 let fuse = (a: Cell, b: Cell): Cell => {
-   return a
+   return createCell(a, b)
 }
 
-let createCell = (): Cell => {
+export let createCell = (left?: Cell, right?: Cell): Cell => {
    let _getFromResult = (prop: GetProp) => {
       let { divisor, widthNum, xNum, tNum } = prop
-      return me
-         .get({
-            divisor,
-            widthNum: widthNum * 2,
-            tNum: tNum - widthNum / 4,
-            xNum: xNum - widthNum / 4,
-         })
-         .result()
+
+      return _get({
+         divisor,
+         widthNum: widthNum * 2,
+         tNum: tNum - widthNum / 2,
+         xNum: xNum - widthNum / 2,
+      }).result()
    }
 
    let _getFromFusion = (prop: GetProp) => {
       let { divisor, widthNum, xNum, tNum } = prop
+
+      let smallProp = {
+         divisor,
+         widthNum: widthNum / 2,
+         tNum,
+      }
+
       return fuse(
-         me.get({
-            divisor,
-            widthNum: widthNum * 2,
-            tNum: tNum - widthNum / 4,
-            xNum: xNum - widthNum / 4,
-         }),
-         me.get({
-            divisor,
-            widthNum: widthNum * 2,
-            tNum: tNum - widthNum / 4,
-            xNum: xNum - widthNum / 4,
-         }),
+         _get({ ...smallProp, xNum }),
+         _get({ ...smallProp, xNum: xNum + widthNum / 2 }),
       )
    }
 
    let _getFromLeft = (prop: GetProp) => {
-      return me.get({
-         ...prop,
-         widthNum: prop.widthNum * 2,
-      }).left
+      return _get({ ...prop, widthNum: prop.widthNum * 2 }).left
    }
 
    let _getFromRight = (prop: GetProp) => {
-      return me.get({
+      return _get({
          ...prop,
          widthNum: prop.widthNum * 2,
-         xNum: prop.xNum + prop.widthNum / 2,
+         xNum: prop.xNum - prop.widthNum,
       }).right
    }
 
    let _check = (prop: GetProp) => {
       let { divisor, widthNum, xNum, tNum } = prop
 
-      if (!isPowerOf2(divisor)) throw new RangeError()
+      try {
+         if (!isPowerOf2(divisor)) throw new RangeError()
 
-      if (!isPowerOf2(widthNum)) throw new RangeError()
+         if (!isPowerOf2(widthNum)) throw new RangeError()
 
-      if (!(widthNum >= 2)) throw new RangeError()
+         if (!(widthNum >= 2)) throw new RangeError()
 
-      if (!(widthNum <= divisor)) throw new RangeError()
+         if (!(widthNum <= divisor)) throw new RangeError()
 
-      if (!(tNum >= 0)) throw new RangeError()
+         if (!(tNum >= 0)) throw new RangeError()
 
-      if (!(4 * tNum <= divisor)) throw new RangeError()
+         if (!(4 * tNum <= divisor)) throw new RangeError()
 
-      if (!(xNum >= tNum)) throw new RangeError()
+         if (!(xNum >= tNum)) throw new RangeError()
 
-      if (!(xNum <= divisor - widthNum - tNum)) throw new RangeError()
+         if (!(xNum <= divisor - widthNum - tNum)) throw new RangeError()
 
-      if (!((xNum + tNum) % 2 == 0)) throw new RangeError()
+         if (!((xNum + tNum) % 2 == 0)) throw new RangeError()
+      } catch (e) {
+         e.getProp = prop
+         throw e
+      }
    }
 
    let _get = (prop: GetProp) => {
       let { divisor, widthNum, xNum, tNum } = prop
+
+      _check(prop)
 
       if (tNum > 0) {
          // Case tNum > 0
@@ -131,10 +131,21 @@ let createCell = (): Cell => {
       }
    }
 
-   let me: Partial<Cell> = {
+   let me: Partial<Cell> & Pick<Cell, 'get'> = {
+      left,
+      right,
       get: (prop: GetProp): Cell => {
          _check(prop)
          return _get(prop)
+      },
+      result: () => {
+         let param = {
+            divisor: 8,
+            widthNum: 2,
+            tNum: 2,
+         }
+
+         return fuse(_get({ ...param, xNum: 2 }), _get({ ...param, xNum: 4 }))
       },
    }
 
