@@ -9,9 +9,15 @@
       "test": "ava --watch"
    },
    "ava": {
-      "extensions": ["ts"],
-      "require": ["ts-node/register"],
-      "files": ["src/**/*.test.ts"]
+      "extensions": [
+         "ts"
+      ],
+      "require": [
+         "ts-node/register"
+      ],
+      "files": [
+         "src/**/*.test.ts"
+      ]
    },
    "devDependencies": {
       "@types/node": "^13.1.1",
@@ -22,6 +28,7 @@
    "dependencies": {
       "js-xxhash": "^1.0.4",
       "parcel": "^1.12.4",
-      "rxjs": "^6.5.4"
+      "rxjs": "^6.5.4",
+      "ts-node": "^8.9.1"
    }
 }
